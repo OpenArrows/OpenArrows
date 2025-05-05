@@ -45,6 +45,9 @@ int main(void) {
 
   gladLoadGL(glfwGetProcAddress);
 
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
   // Enable debug features
 
 #ifndef NDEBUG
