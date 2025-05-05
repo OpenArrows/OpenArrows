@@ -39,12 +39,16 @@ ENUM(ArrowSignal) None = 0 END_ENUM;
 
 struct Arrow {
   ArrowType type DEFVAL(Void);
-  ArrowRotation rotation DEFVAL(Up);
+  ArrowRotation rotation DEFVAL(Up); // TODO: does rotation have to be 4 bytes?
   ArrowSignal signal DEFVAL(None);
 };
 #ifndef GLSL
 typedef struct Arrow Arrow;
 #endif
+
+// GLSL doesn't support sizeof operator, so we need to define the size of each
+// type by hand
+#define SIZEOF_ARROW (/* type */ 4 + /* rotation */ 4 + /* signal */ 4)
 
 struct Chunk {
   Arrow arrows[CHUNK_SIZE * CHUNK_SIZE];
@@ -58,3 +62,7 @@ struct Chunk {
 #ifndef GLSL
 typedef struct Chunk Chunk;
 #endif
+
+#define SIZEOF_CHUNK                                                           \
+  (/* arrows */ SIZEOF_ARROW * CHUNK_SIZE * CHUNK_SIZE +                       \
+   /* adjacentChunks */ 4 * 8)
