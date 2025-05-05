@@ -4,6 +4,3 @@
 [submodule "lib/glad"]
 	path = lib/glad
 	url = https://github.com/Dav1dde/glad.git
-[submodule "lib/whereami"]
-	path = lib/whereami
-	url = https://github.com/gpakosz/whereami.git
