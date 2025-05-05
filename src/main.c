@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <whereami.h>
 
 const GLuint WIDTH = 800, HEIGHT = 600;
@@ -13,27 +14,41 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
+static const unsigned char arrow_comp_spv[] = {
+#embed "shaders/arrow.comp.spv"
+};
+
 int main(void) {
+  // GL initialization
+
   glfwInit();
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  int filenameLength = wai_getExecutablePath(NULL, 0, NULL);
-  char *name = malloc(filenameLength + 1);
-  int dirnameLength;
-  wai_getExecutablePath(name, filenameLength, &dirnameLength);
-  name[dirnameLength] = '\0';
+  // Loading game resources
 
-  GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, name, NULL, NULL);
+  char resourcePath[256], *resourceName;
+  {
+    int dirnameLength;
+    wai_getExecutablePath(resourcePath,
+                          sizeof(resourcePath) / sizeof(*resourcePath),
+                          &dirnameLength);
+    strcpy(resourcePath + dirnameLength, "/../res/");
+    resourceName = resourcePath + dirnameLength + strlen("/../res/");
+  }
+  strcpy(resourceName, "shaders/arrow.frag");
+
+  // Window creation
+
+  GLFWwindow *window =
+      glfwCreateWindow(WIDTH, HEIGHT, resourcePath, NULL, NULL);
   glfwMakeContextCurrent(window);
 
   glfwSetKeyCallback(window, key_callback);
 
-  int version = gladLoadGL(glfwGetProcAddress);
-  printf("GL %d.%d\n", GLAD_VERSION_MAJOR(version),
-         GLAD_VERSION_MINOR(version));
+  gladLoadGL(glfwGetProcAddress);
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
