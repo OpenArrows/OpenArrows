@@ -53,8 +53,9 @@ int main(void) {
   // GL resources initialization
 
   unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
-  glShaderBinary(1, &compute, GL_SHADER_BINARY_FORMAT_SPIR_V, arrow_comp_spv,
-                 sizeof(arrow_comp_spv));
+  glShaderBinary(1, &compute, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 arrow_comp_spv, sizeof(arrow_comp_spv));
+  glSpecializeShaderARB(compute, "main", 0, NULL, NULL);
   glCompileShader(compute);
 
   GLint status;

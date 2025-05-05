@@ -20,7 +20,7 @@
 typedef unsigned int uint;
 #endif
 
-#define CHUNK_SIZE 64
+#define CHUNK_SIZE 16
 
 #ifdef GLSL
 #define ArrowType uint
