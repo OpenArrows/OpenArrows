@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <whereami.h>
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 
@@ -27,23 +26,10 @@ int main(void) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  // Loading game resources
-
-  char resourcePath[256], *resourceName;
-  {
-    int dirnameLength;
-    wai_getExecutablePath(resourcePath,
-                          sizeof(resourcePath) / sizeof(*resourcePath),
-                          &dirnameLength);
-    strcpy(resourcePath + dirnameLength, "/../res/");
-    resourceName = resourcePath + dirnameLength + strlen("/../res/");
-  }
-  strcpy(resourceName, "shaders/arrow.frag");
-
   // Window creation
 
   GLFWwindow *window =
-      glfwCreateWindow(WIDTH, HEIGHT, resourcePath, NULL, NULL);
+      glfwCreateWindow(WIDTH, HEIGHT, "Democracy Arrows", NULL, NULL);
   glfwMakeContextCurrent(window);
 
   glfwSetKeyCallback(window, key_callback);

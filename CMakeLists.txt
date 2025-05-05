@@ -11,9 +11,6 @@ add_subdirectory(lib/glfw)
 add_subdirectory(lib/glad/cmake glad_cmake)
 glad_add_library(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.3)
 
-add_library(whereami STATIC lib/whereami/src/whereami.c)
-include_directories(lib/whereami/src)
-
 include_directories(build)
 
 # Pre-compile shaders
@@ -35,6 +32,6 @@ add_custom_target(shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
 
 # Game executable
 add_executable(game src/main.c)
-target_link_libraries(game PUBLIC glfw glad whereami ${SHADERS_BIN})
+target_link_libraries(game PUBLIC glfw glad ${SHADERS_BIN})
 
 install(TARGETS game)
