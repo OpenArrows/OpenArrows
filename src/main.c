@@ -65,6 +65,35 @@ int main(void) {
 
   // GL resources initialization
 
+  // Buffers
+
+  GLfloat vertices[] = {
+      1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f,
+      0.f, 0.f, 0.f, 1.f, 0.f, 1.f, 0.f, 1.f,
+  };
+
+  GLuint indices[] = {
+      0, 1, 3, 1, 2, 3,
+  };
+
+  GLuint vbo, vao, ebo;
+  glGenVertexArrays(1, &vao);
+  glGenBuffers(1, &vbo);
+  glGenBuffers(1, &ebo);
+  glBindVertexArray(vao);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void *)0);
+  glEnableVertexAttribArray(0);
+
+  // Shaders
+
   GLuint gridVert = glCreateShader(GL_VERTEX_SHADER);
   glShaderBinary(1, &gridVert, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
                  grid_vert_spv, sizeof(grid_vert_spv));
@@ -79,21 +108,18 @@ int main(void) {
   glCompileShader(gridFrag);
   checkShaderCompileErrors(gridFrag);
 
-  GLuint compute = glCreateShader(GL_COMPUTE_SHADER);
-  glShaderBinary(1, &compute, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
-                 arrow_comp_spv, sizeof(arrow_comp_spv));
-  glSpecializeShaderARB(compute, "main", 0, NULL, NULL);
-  glCompileShader(compute);
-  checkShaderCompileErrors(compute);
+  GLuint gridProgram = glCreateProgram();
+  glAttachShader(gridProgram, gridVert);
+  glAttachShader(gridProgram, gridFrag);
+  glLinkProgram(gridProgram);
+  checkProgramLinkErrors(gridProgram);
 
-  GLint status;
-  GLchar infoLog[1024];
-  glGetShaderiv(compute, GL_COMPILE_STATUS, &status);
-  if (!status) {
-    glGetShaderInfoLog(compute, sizeof(infoLog), NULL, infoLog);
-    fprintf(stderr, "Shader compilation failed: %s\n", infoLog);
-    exit(-1);
-  }
+  GLuint arrowComp = glCreateShader(GL_COMPUTE_SHADER);
+  glShaderBinary(1, &arrowComp, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 arrow_comp_spv, sizeof(arrow_comp_spv));
+  glSpecializeShaderARB(arrowComp, "main", 0, NULL, NULL);
+  glCompileShader(arrowComp);
+  checkShaderCompileErrors(arrowComp);
 
   // Main game loop
 
@@ -102,6 +128,10 @@ int main(void) {
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(gridProgram);
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glfwSwapBuffers(window);
   }

@@ -11,5 +11,6 @@ layout(std140, binding = 0) uniform Transform {
 
 void main() {
   texCoord = position.xy;
-  gl_Position = projection * view * model * position;
+  // gl_Position = projection * view * model * position;
+  gl_Position = position;
 }

@@ -1,16 +1,16 @@
 #include <glad/gl.h>
 
 void _checkShaderCompileErrors(GLuint shader, const char *file, int line);
-void _checkProgramCompileErrors(GLuint shader, const char *file, int line);
+void _checkProgramLinkErrors(GLuint shader, const char *file, int line);
 
 #ifndef NDEBUG
 #define checkShaderCompileErrors(shader)                                       \
   _checkShaderCompileErrors(shader, __FILE__, __LINE__)
-#define checkProgramCompileErrors(shader)                                      \
-  _checkProgramCompileErrors(shader, __FILE__, __LINE__)
+#define checkProgramLinkErrors(shader)                                         \
+  _checkProgramLinkErrors(shader, __FILE__, __LINE__)
 #else
 #define checkShaderCompileErrors(shader)
-#define checkProgramCompileErrors(shader)
+#define checkProgramLinkErrors(shader)
 #endif
 
 void gl_error_callback(GLint error, const GLchar *description);

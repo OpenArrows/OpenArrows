@@ -1,7 +1,7 @@
 #version 430 core
 #extension GL_OES_standard_derivatives : enable
 
-layout(location = 2) out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
 
 layout(location = 1) in vec2 texCoord;
 

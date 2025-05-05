@@ -14,7 +14,7 @@ void _checkShaderCompileErrors(GLuint shader, const char *file, int line) {
   }
 }
 
-void _checkProgramCompileErrors(GLuint program, const char *file, int line) {
+void _checkProgramLinkErrors(GLuint program, const char *file, int line) {
   GLint status;
   GLchar infoLog[1024];
   glGetProgramiv(program, GL_COMPILE_STATUS, &status);
