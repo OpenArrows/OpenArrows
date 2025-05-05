@@ -1,4 +1,10 @@
-#version 320 es
+#version 430
+
+#include "../arrows.h"
+
+unsigned int 123;
+
+layout(local_size_x = 64, local_size_y = 64) in;
 
 void main() {
   // ok!!!

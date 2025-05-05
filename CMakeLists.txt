@@ -9,7 +9,7 @@ find_package(Vulkan REQUIRED COMPONENTS glslc)
 add_subdirectory(lib/glfw)
 
 add_subdirectory(lib/glad/cmake glad_cmake)
-glad_add_library(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=3.3)
+glad_add_library(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.3)
 
 add_library(whereami STATIC lib/whereami/src/whereami.c)
 include_directories(lib/whereami/src)
@@ -17,12 +17,14 @@ include_directories(lib/whereami/src)
 include_directories(build)
 
 # Pre-compile shaders
+set(GLSLC_FLAGS -DGLSL)
+
 file(GLOB_RECURSE SHADERS RELATIVE "${CMAKE_SOURCE_DIR}/src/shaders/" src/shaders/*.frag src/shaders/*.vert src/shaders/*.comp)
 foreach(SHADER IN LISTS SHADERS)
     set(SPIRV "${PROJECT_BINARY_DIR}/shaders/${SHADER}.spv")
     add_custom_command(
         OUTPUT ${SPIRV}
-        COMMAND ${Vulkan_GLSLC_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/shaders/${SHADER}" -o ${SPIRV}
+        COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${GLSLC_FLAGS} "${CMAKE_SOURCE_DIR}/src/shaders/${SHADER}" -o ${SPIRV}
         DEPENDS src/shaders/${SHADER}
         VERBATIM)
     list(APPEND SPIRV_BINARY_FILES ${SPIRV})
