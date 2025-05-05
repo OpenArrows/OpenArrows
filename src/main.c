@@ -50,6 +50,24 @@ int main(void) {
 
   gladLoadGL(glfwGetProcAddress);
 
+  // GL resources initialization
+
+  unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
+  glShaderBinary(1, &compute, GL_SHADER_BINARY_FORMAT_SPIR_V, arrow_comp_spv,
+                 sizeof(arrow_comp_spv));
+  glCompileShader(compute);
+
+  GLint status;
+  GLchar infoLog[1024];
+  glGetShaderiv(compute, GL_COMPILE_STATUS, &status);
+  if (!status) {
+    glGetShaderInfoLog(compute, sizeof(infoLog), NULL, infoLog);
+    fprintf(stderr, "Shader compilation failed: %s\n", infoLog);
+    exit(-1);
+  }
+
+  // Main game loop
+
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 

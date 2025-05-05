@@ -21,6 +21,7 @@ set(GLSLC_FLAGS -DGLSL)
 
 file(GLOB_RECURSE SHADERS RELATIVE "${CMAKE_SOURCE_DIR}/src/shaders/" src/shaders/*.frag src/shaders/*.vert src/shaders/*.comp)
 foreach(SHADER IN LISTS SHADERS)
+    # The resulting binary files will be later embedded into executable using C23's #embed directive
     set(SPIRV "${PROJECT_BINARY_DIR}/shaders/${SHADER}.spv")
     add_custom_command(
         OUTPUT ${SPIRV}
