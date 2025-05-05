@@ -31,7 +31,9 @@ endforeach(SHADER IN LISTS SHADERS)
 add_custom_target(shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
 
 # Game executable
-add_executable(game src/main.c)
+set(SOURCES src/main.c src/gl-debug.c)
+
+add_executable(game ${SOURCES})
 target_link_libraries(game PUBLIC glfw glad ${SHADERS_BIN})
 
 install(TARGETS game)

@@ -1,4 +1,5 @@
 #define GLFW_INCLUDE_NONE
+#include "gl-debug.h"
 #include <GLFW/glfw3.h>
 #include <glad/gl.h>
 #include <stdio.h>
@@ -12,6 +13,14 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 }
+
+static const unsigned char grid_vert_spv[] = {
+#embed "shaders/grid.vert.spv"
+};
+
+static const unsigned char grid_frag_spv[] = {
+#embed "shaders/grid.frag.spv"
+};
 
 static const unsigned char arrow_comp_spv[] = {
 #embed "shaders/arrow.comp.spv"
@@ -36,13 +45,46 @@ int main(void) {
 
   gladLoadGL(glfwGetProcAddress);
 
+  // Enable debug features
+
+#ifndef NDEBUG
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
+
+  GLint flags;
+  glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+  if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(gl_debug_output, NULL);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL,
+                          GL_TRUE);
+  }
+
+  glfwSetErrorCallback(gl_error_callback);
+#endif
+
   // GL resources initialization
 
-  unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
+  GLuint gridVert = glCreateShader(GL_VERTEX_SHADER);
+  glShaderBinary(1, &gridVert, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 grid_vert_spv, sizeof(grid_vert_spv));
+  glSpecializeShaderARB(gridVert, "main", 0, NULL, NULL);
+  glCompileShader(gridVert);
+  checkShaderCompileErrors(gridVert);
+
+  GLuint gridFrag = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderBinary(1, &gridFrag, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 grid_frag_spv, sizeof(grid_frag_spv));
+  glSpecializeShaderARB(gridFrag, "main", 0, NULL, NULL);
+  glCompileShader(gridFrag);
+  checkShaderCompileErrors(gridFrag);
+
+  GLuint compute = glCreateShader(GL_COMPUTE_SHADER);
   glShaderBinary(1, &compute, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
                  arrow_comp_spv, sizeof(arrow_comp_spv));
   glSpecializeShaderARB(compute, "main", 0, NULL, NULL);
   glCompileShader(compute);
+  checkShaderCompileErrors(compute);
 
   GLint status;
   GLchar infoLog[1024];
@@ -58,7 +100,7 @@ int main(void) {
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
-    glClearColor(0.7f, 0.9f, 0.1f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glfwSwapBuffers(window);
