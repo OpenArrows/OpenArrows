@@ -11,6 +11,9 @@ add_subdirectory(lib/glfw)
 add_subdirectory(lib/glad/cmake glad_cmake)
 glad_add_library(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.3)
 
+add_subdirectory(lib/cglm)
+include_directories(lib/cglm/include)
+
 include_directories(build)
 
 # Pre-compile shaders
@@ -34,6 +37,8 @@ add_custom_target(shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
 set(SOURCES src/main.c src/gl-debug.c)
 
 add_executable(game ${SOURCES})
-target_link_libraries(game PUBLIC glfw glad ${SHADERS_BIN})
+add_dependencies(game shaders)
+target_link_libraries(game PUBLIC glfw glad)
+set_property(TARGET game PROPERTY C_STANDARD 23)
 
 install(TARGETS game)

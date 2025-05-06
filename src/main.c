@@ -1,12 +1,17 @@
 #define GLFW_INCLUDE_NONE
 #include "gl-debug.h"
 #include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
 #include <glad/gl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-const GLuint WIDTH = 800, HEIGHT = 600;
+const float TILE_COUNT = 32.f;
+
+GLuint winWidth = 800, winHeight = 600;
+
+// Static resources
 
 static const unsigned char grid_vert_spv[] = {
 #embed "shaders/grid.vert.spv"
@@ -20,13 +25,53 @@ static const unsigned char arrow_comp_spv[] = {
 #embed "shaders/arrow.comp.spv"
 };
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action,
-                  int mode) {
+// Game state
+
+float scale = 1.0f;
+vec2 cameraOffset = {0.0f, 0.0f};
+
+// Input handlers
+
+static void key_callback(GLFWwindow *window, int key, int scancode, int action,
+                         int mode) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+double dragOffsetX, dragOffsetY;
+
+bool wheelPressed = 0;
+static void mouse_button_callback(GLFWwindow *window, int button, int action,
+                                  int mods) {
+  if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+    wheelPressed = !(action == GLFW_RELEASE);
+    if (action == GLFW_PRESS) {
+      double mouseX, mouseY;
+      glfwGetCursorPos(window, &mouseX, &mouseY);
+      dragOffsetX = cameraOffset[0] + mouseX / (double)winWidth;
+      dragOffsetY = cameraOffset[1] + mouseY / (double)winHeight;
+    }
+  }
+}
+
+static void cursor_position_callback(GLFWwindow *window, double xpos,
+                                     double ypos) {
+  if (!wheelPressed)
+    return;
+  cameraOffset[0] = dragOffsetX - xpos / (double)winWidth;
+  cameraOffset[1] = dragOffsetY - ypos / (double)winHeight;
+}
+
+double scroll = 0.f;
+static void scroll_callback(GLFWwindow *window, double xoffset,
+                            double yoffset) {
+  scroll += yoffset;
+}
+
+static void framebuffer_size_callback(GLFWwindow *window, int width,
+                                      int height) {
+  winWidth = width;
+  winHeight = height;
   glViewport(0, 0, width, height);
 }
 
@@ -48,10 +93,13 @@ int main(void) {
   // Window creation
 
   GLFWwindow *window =
-      glfwCreateWindow(WIDTH, HEIGHT, "Democracy Arrows", NULL, NULL);
+      glfwCreateWindow(winWidth, winHeight, "Democracy Arrows", NULL, NULL);
   glfwMakeContextCurrent(window);
 
   glfwSetKeyCallback(window, key_callback);
+  glfwSetMouseButtonCallback(window, mouse_button_callback);
+  glfwSetCursorPosCallback(window, cursor_position_callback);
+  glfwSetScrollCallback(window, scroll_callback);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
   gladLoadGL(glfwGetProcAddress);
@@ -119,6 +167,19 @@ int main(void) {
   glAttachShader(gridProgram, gridFrag);
   glLinkProgram(gridProgram);
 
+  // Buffers
+
+  GLuint uboTransform;
+  glGenBuffers(1, &uboTransform);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(mat4), NULL, GL_STATIC_DRAW);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboTransform);
+
+  mat4 view;
+
   GLuint arrowComp = glCreateShader(GL_COMPUTE_SHADER);
   glShaderBinary(1, &arrowComp, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
                  arrow_comp_spv, sizeof(arrow_comp_spv));
@@ -129,8 +190,24 @@ int main(void) {
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
+    if (scroll != 0.f)
+      scale /= powf(1.2f, (float)scroll);
+    scroll = 0.f;
+
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // TODO: Use 2D transformations instead of 3D
+    glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
+    glm_mat4_identity(view);
+    vec3 viewport = {1.0f * TILE_COUNT,
+                     (float)winHeight / (float)winWidth * TILE_COUNT, 1.0f};
+    glm_scale(view, viewport);
+    vec3 cameraOffset3 = {cameraOffset[0], cameraOffset[1], 0.0f};
+    glm_translate(view, cameraOffset3);
+    glm_mat4_scale(view, scale);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), view[0]);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     glUseProgram(gridProgram);
     glBindVertexArray(vao);
