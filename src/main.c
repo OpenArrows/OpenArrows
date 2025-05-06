@@ -8,12 +8,6 @@
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action,
-                  int mode) {
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, GL_TRUE);
-}
-
 static const unsigned char grid_vert_spv[] = {
 #embed "shaders/grid.vert.spv"
 };
@@ -26,6 +20,16 @@ static const unsigned char arrow_comp_spv[] = {
 #embed "shaders/arrow.comp.spv"
 };
 
+void key_callback(GLFWwindow *window, int key, int scancode, int action,
+                  int mode) {
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+  glViewport(0, 0, width, height);
+}
+
 int main(void) {
   // GL initialization
 
@@ -35,6 +39,12 @@ int main(void) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+#ifndef NDEBUG
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
+
+  glfwSetErrorCallback(gl_error_callback);
+#endif
+
   // Window creation
 
   GLFWwindow *window =
@@ -42,6 +52,7 @@ int main(void) {
   glfwMakeContextCurrent(window);
 
   glfwSetKeyCallback(window, key_callback);
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
   gladLoadGL(glfwGetProcAddress);
 
@@ -51,8 +62,6 @@ int main(void) {
   // Enable debug features
 
 #ifndef NDEBUG
-  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
-
   GLint flags;
   glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
   if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
@@ -62,8 +71,6 @@ int main(void) {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL,
                           GL_TRUE);
   }
-
-  glfwSetErrorCallback(gl_error_callback);
 #endif
 
   // GL resources initialization
@@ -101,28 +108,21 @@ int main(void) {
   glShaderBinary(1, &gridVert, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
                  grid_vert_spv, sizeof(grid_vert_spv));
   glSpecializeShaderARB(gridVert, "main", 0, NULL, NULL);
-  glCompileShader(gridVert);
-  checkShaderCompileErrors(gridVert);
 
   GLuint gridFrag = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderBinary(1, &gridFrag, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
                  grid_frag_spv, sizeof(grid_frag_spv));
   glSpecializeShaderARB(gridFrag, "main", 0, NULL, NULL);
-  glCompileShader(gridFrag);
-  checkShaderCompileErrors(gridFrag);
 
   GLuint gridProgram = glCreateProgram();
   glAttachShader(gridProgram, gridVert);
   glAttachShader(gridProgram, gridFrag);
   glLinkProgram(gridProgram);
-  checkProgramLinkErrors(gridProgram);
 
   GLuint arrowComp = glCreateShader(GL_COMPUTE_SHADER);
   glShaderBinary(1, &arrowComp, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
                  arrow_comp_spv, sizeof(arrow_comp_spv));
   glSpecializeShaderARB(arrowComp, "main", 0, NULL, NULL);
-  glCompileShader(arrowComp);
-  checkShaderCompileErrors(arrowComp);
 
   // Main game loop
 

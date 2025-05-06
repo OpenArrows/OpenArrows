@@ -2,30 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void _checkShaderCompileErrors(GLuint shader, const char *file, int line) {
-  GLint status;
-  GLchar infoLog[1024];
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-  if (!status) {
-    glGetShaderInfoLog(shader, sizeof(infoLog), NULL, infoLog);
-    fprintf(stderr, "GL shader compilation failed at \"%s:%d\": %s\n", file,
-            line, infoLog);
-    exit(-1);
-  }
-}
-
-void _checkProgramLinkErrors(GLuint program, const char *file, int line) {
-  GLint status;
-  GLchar infoLog[1024];
-  glGetProgramiv(program, GL_COMPILE_STATUS, &status);
-  if (!status) {
-    glGetProgramInfoLog(program, sizeof(infoLog), NULL, infoLog);
-    fprintf(stderr, "GL program compilation failed at \"%s:%d\": %s\n", file,
-            line, infoLog);
-    exit(-1);
-  }
-}
-
 void gl_error_callback(GLint error, const GLchar *description) {
   fprintf(stderr, "GL error (%d): %s\n", error, description);
   exit(-1);
