@@ -1,5 +1,7 @@
-// Game map in-memory representation definitions (arrow types, signals, chunks,
-// etc.)
+// Definitions of game map elements' in-memory representation (arrow states,
+// chunks, etc.)
+
+#include <stdint.h>
 
 // This header is intended to be used both from C and GLSL, so we need to
 // provide some layer of compatiblity
@@ -7,17 +9,14 @@
 // Enums are not a thing in GLSL. Instead, use uint constants
 #define ENUM(NAME) const NAME
 #define END_ENUM
-
-// GLSL struct members can't have initializers, so it's a no-op
-#define DEFVAL(VALUE)
 #else
-#define ENUM(NAME) enum NAME : unsigned int {
-#define END_ENUM }
+#define ENUM(NAME) typedef enum NAME : unsigned int {
+#define END_ENUM(NAME)                                                         \
+  }                                                                            \
+  NAME
 
-#define DEFVAL(VALUE) = VALUE
-
-// `unsigned int` is `uint` in GLSL, but it's simpler to typedef on the C side
-typedef unsigned int uint;
+// GLSL uint is always a 32-bit unsigned integer
+typedef uint32_t uint;
 #endif
 
 #define CHUNK_SIZE 16
@@ -25,22 +24,23 @@ typedef unsigned int uint;
 #ifdef GLSL
 #define ArrowType uint
 #endif
-ENUM(ArrowType) Void = 0 END_ENUM;
+ENUM(ArrowType) Void = 0 END_ENUM(ArrowType);
 
 #ifdef GLSL
-#define ArrowRotation uint
+#define ArrowRotation uint // TODO: does rotation have to be 4 bytes?
 #endif
-ENUM(ArrowRotation) Up = 0, Right = 1, Down = 2, Left = 3 END_ENUM;
+ENUM(ArrowRotation)
+Up = 0, Right = 1, Down = 2, Left = 3 END_ENUM(ArrowRotation);
 
 #ifdef GLSL
 #define ArrowSignal uint
 #endif
-ENUM(ArrowSignal) None = 0 END_ENUM;
+ENUM(ArrowSignal) None = 0 END_ENUM(ArrowSignal);
 
 struct Arrow {
-  ArrowType type DEFVAL(Void);
-  ArrowRotation rotation DEFVAL(Up); // TODO: does rotation have to be 4 bytes?
-  ArrowSignal signal DEFVAL(None);
+  ArrowType type;
+  ArrowRotation rotation;
+  ArrowSignal signal;
 };
 #ifndef GLSL
 typedef struct Arrow Arrow;
@@ -51,6 +51,8 @@ typedef struct Arrow Arrow;
 #define SIZEOF_ARROW (/* type */ 4 + /* rotation */ 4 + /* signal */ 4)
 
 struct Chunk {
+  uint x;
+  uint y;
   Arrow arrows[CHUNK_SIZE * CHUNK_SIZE];
   uint adjacentChunks[8]; // It's better to cache adjacent chunks than make a
                           // look-up each time. Adjacent chunks are stored
@@ -64,5 +66,6 @@ typedef struct Chunk Chunk;
 #endif
 
 #define SIZEOF_CHUNK                                                           \
-  (/* arrows */ SIZEOF_ARROW * CHUNK_SIZE * CHUNK_SIZE +                       \
+  (/* x */ 4 + /* y */ 4 +                                                     \
+   /* arrows */ SIZEOF_ARROW * CHUNK_SIZE * CHUNK_SIZE +                       \
    /* adjacentChunks */ 4 * 8)

@@ -34,7 +34,10 @@ endforeach(SHADER IN LISTS SHADERS)
 add_custom_target(shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
 
 # Game executable
-set(SOURCES src/main.c src/gl-debug.c)
+set(SOURCES
+    src/main.c
+    src/game-map.c
+    src/gl-debug.c)
 
 add_executable(game ${SOURCES})
 add_dependencies(game shaders)

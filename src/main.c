@@ -1,4 +1,5 @@
 #define GLFW_INCLUDE_NONE
+#include "game-map.h"
 #include "gl-debug.h"
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
@@ -19,6 +20,14 @@ static const unsigned char grid_vert_spv[] = {
 
 static const unsigned char grid_frag_spv[] = {
 #embed "shaders/grid.frag.spv"
+};
+
+static const unsigned char arrow_vert_spv[] = {
+#embed "shaders/arrow.vert.spv"
+};
+
+static const unsigned char arrow_frag_spv[] = {
+#embed "shaders/arrow.frag.spv"
 };
 
 static const unsigned char arrow_comp_spv[] = {
@@ -167,6 +176,26 @@ int main(void) {
   glAttachShader(gridProgram, gridFrag);
   glLinkProgram(gridProgram);
 
+  GLuint arrowVert = glCreateShader(GL_VERTEX_SHADER);
+  glShaderBinary(1, &arrowVert, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 arrow_vert_spv, sizeof(arrow_vert_spv));
+  glSpecializeShaderARB(arrowVert, "main", 0, NULL, NULL);
+
+  GLuint arrowFrag = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderBinary(1, &arrowFrag, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 arrow_frag_spv, sizeof(arrow_frag_spv));
+  glSpecializeShaderARB(arrowFrag, "main", 0, NULL, NULL);
+
+  GLuint arrowProgram = glCreateProgram();
+  glAttachShader(arrowProgram, arrowVert);
+  glAttachShader(arrowProgram, arrowFrag);
+  glLinkProgram(arrowProgram);
+
+  GLuint arrowComp = glCreateShader(GL_COMPUTE_SHADER);
+  glShaderBinary(1, &arrowComp, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 arrow_comp_spv, sizeof(arrow_comp_spv));
+  glSpecializeShaderARB(arrowComp, "main", 0, NULL, NULL);
+
   // Buffers
 
   GLuint uboTransform;
@@ -180,10 +209,12 @@ int main(void) {
 
   mat4 view;
 
-  GLuint arrowComp = glCreateShader(GL_COMPUTE_SHADER);
-  glShaderBinary(1, &arrowComp, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
-                 arrow_comp_spv, sizeof(arrow_comp_spv));
-  glSpecializeShaderARB(arrowComp, "main", 0, NULL, NULL);
+  // Game state
+
+  GameMap map;
+  map_create(&map, 0);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, 1, map.ssbo);
 
   // Main game loop
 
@@ -213,8 +244,14 @@ int main(void) {
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+    glUseProgram(arrowProgram);
+    glBindVertexArray(vao);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 1);
+
     glfwSwapBuffers(window);
   }
+
+  map_release(&map);
 
   glfwTerminate();
 
