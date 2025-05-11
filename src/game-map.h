@@ -11,8 +11,12 @@ struct GameMap {
 };
 typedef struct GameMap GameMap;
 
-void map_create(GameMap *map, unsigned int nChunks);
+void map_init(GameMap *map, unsigned int nChunks);
 
-void map_release(GameMap *map);
+void map_deinit(GameMap *map);
 
-Chunk *map_get_chunk(GameMap *map, uint32_t x, uint32_t y);
+void map_sync(GameMap *map);
+
+void map_sync_chunk(GameMap *map, Chunk *chunk);
+
+Chunk *map_get_chunk(GameMap *map, uint16_t x, uint16_t y);

@@ -17,7 +17,7 @@ float gridSmooth(vec2 p) {
   q += .5;
   q -= floor(q);
   q = (gridThickness + 1.) * .5 - abs(q - .5);
-  float w = 12. * filterWidth2(p);
+  float w = 16. * filterWidth2(p);
   float s = sqrt(gridThickness);
   return smoothstep(.5 - w * s, .5 + w, max(q.x, q.y));
 }

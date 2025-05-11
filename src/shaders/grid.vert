@@ -1,13 +1,13 @@
 #version 430 core
-layout(location = 0) in vec4 position;
+layout(location = 0) in vec2 position;
 
 layout(location = 1) out vec2 texCoord;
 
 layout(std140, binding = 0) uniform Transform { mat4 view; };
 
 void main() {
-  vec4 uv = position;
+  vec2 uv = position;
   uv.y = 1.0 - uv.y;
-  texCoord = (view * uv).xy;
-  gl_Position = 2.0 * position - 1.0;
+  texCoord = (view * vec4(uv, 0.0, 1.0)).xy;
+  gl_Position = vec4(2.0 * position - 1.0, 0.0, 1.0);
 }

@@ -135,8 +135,7 @@ int main(void) {
   // Buffers
 
   GLfloat vertices[] = {
-      1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f,
-      0.f, 0.f, 0.f, 1.f, 0.f, 1.f, 0.f, 1.f,
+      1.f, 1.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f,
   };
 
   GLuint indices[] = {
@@ -156,7 +155,7 @@ int main(void) {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
                GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void *)0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
   glEnableVertexAttribArray(0);
 
   // Shaders
@@ -198,21 +197,21 @@ int main(void) {
 
   // Buffers
 
+  mat4 view;
+
   GLuint uboTransform;
   glGenBuffers(1, &uboTransform);
 
   glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(mat4), NULL, GL_STATIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(view), NULL, GL_STATIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboTransform);
 
-  mat4 view;
-
   // Game state
 
   GameMap map;
-  map_create(&map, 0);
+  map_init(&map, 0);
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, map.ssbo);
 
@@ -228,7 +227,7 @@ int main(void) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // TODO: Use 2D transformations instead of 3D
+    // TODO: Maybe use 2D transformations instead of 3D?
     glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
     glm_mat4_identity(view);
     vec3 viewport = {1.0f * TILE_COUNT,
@@ -246,12 +245,12 @@ int main(void) {
 
     glUseProgram(arrowProgram);
     glBindVertexArray(vao);
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 1);
+    // glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 1);
 
     glfwSwapBuffers(window);
   }
 
-  map_release(&map);
+  map_deinit(&map);
 
   glfwTerminate();
 
