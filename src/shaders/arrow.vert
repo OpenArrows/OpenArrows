@@ -19,6 +19,7 @@ void main() {
   int arrowY = arrowIndex / CHUNK_SIZE;
   int chunkIndex = gl_InstanceID - arrowIndex;
   texCoord = position;
-  gl_Position =
-      vec4((projection * view * vec4(position * scale, 0.0, 1.0)).xy, 0.0, 1.0);
+  vec2 offset = vec2(float(arrowX), float(arrowY));
+  gl_Position = vec4((projection * view * vec4(offset + position, 0.0, 1.0)).xy,
+                     0.0, 1.0);
 }
