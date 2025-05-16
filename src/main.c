@@ -234,19 +234,19 @@ int main(void) {
     glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
 
     glm_mat4_identity(view);
-    glm_translate(view, (vec3){-cameraOffset[0] * TILE_COUNT / scale,
-                               -cameraOffset[1] * TILE_COUNT / scale, 0.0f});
-    glm_mat4_scale(view, scale);
+    glm_translate(view, (vec3){-cameraOffset[0] * TILE_COUNT,
+                               -cameraOffset[1] * TILE_COUNT, 0.0f});
+    glm_scale(view, (vec3){scale, scale, 1.0f});
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(view), view[0]);
 
     // Viewspace unit vec2(1.0, 1.0) is a single cell
     glm_mat4_identity(projection);
     glm_scale(projection, (vec3){1.0f, -1.0f, 1.0f});
-    glm_mat4_scale(projection, 2.0f);
     glm_translate(projection, (vec3){-0.5f, -0.5f, 0.0f});
     glm_scale(projection,
               (vec3){1.0f / TILE_COUNT,
                      (float)winWidth / (float)winHeight / TILE_COUNT, 1.0f});
+    glm_mat4_scale(projection, 2.0f);
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(view), sizeof(projection),
                     projection[0]);
 

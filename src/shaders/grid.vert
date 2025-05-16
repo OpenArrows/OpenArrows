@@ -12,6 +12,6 @@ layout(std140, binding = 0) uniform Transform {
 void main() {
   vec2 uv = position;
   uv.y = 1.0 - uv.y;
-  texCoord = (view * vec4(uv, 0.0, 1.0)).xy / scale;
+  texCoord = (projection * view * vec4(uv, 0.0, 1.0)).xy;
   gl_Position = vec4(2.0 * position - 1.0, 0.0, 1.0);
 }
