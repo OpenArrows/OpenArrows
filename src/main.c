@@ -223,8 +223,11 @@ int main(void) {
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
-    if (scroll != 0.f)
+    if (scroll != 0.f) {
       scale *= powf(1.2f, (float)scroll);
+      // TODO: Adjust the camera position so that the scale origin is at the
+      // mouse cursor
+    }
     scroll = 0.;
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
