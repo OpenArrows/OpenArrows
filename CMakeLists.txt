@@ -17,7 +17,7 @@ include_directories(lib/cglm/include)
 include_directories(build)
 
 # Pre-compile shaders
-set(GLSLC_FLAGS -DGLSL)
+set(GLSLC_FLAGS -DGLSL --target-env=opengl)
 
 file(GLOB_RECURSE SHADERS RELATIVE "${CMAKE_SOURCE_DIR}/src/shaders/" src/shaders/*.frag src/shaders/*.vert src/shaders/*.comp)
 foreach(SHADER IN LISTS SHADERS)

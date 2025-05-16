@@ -197,13 +197,15 @@ int main(void) {
 
   // Buffers
 
-  mat4 view;
+  mat4 view, projection;
 
   GLuint uboTransform;
   glGenBuffers(1, &uboTransform);
 
   glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(view), NULL, GL_STATIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER,
+               sizeof(view) + sizeof(projection) + sizeof(scale), NULL,
+               GL_STATIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboTransform);
@@ -221,31 +223,42 @@ int main(void) {
     glfwPollEvents();
 
     if (scroll != 0.f)
-      scale /= powf(1.2f, (float)scroll);
-    scroll = 0.f;
+      scale *= powf(1.2f, (float)scroll);
+    scroll = 0.;
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // TODO: Maybe use 2D transformations instead of 3D?
     glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
+
     glm_mat4_identity(view);
-    vec3 viewport = {1.0f * TILE_COUNT,
-                     (float)winHeight / (float)winWidth * TILE_COUNT, 1.0f};
-    glm_scale(view, viewport);
+    /*vec3 viewport = {1.0f, (float)winWidth / (float)winHeight, 1.0f};
+    glm_scale(view, viewport);*/
     vec3 cameraOffset3 = {cameraOffset[0], cameraOffset[1], 0.0f};
     glm_translate(view, cameraOffset3);
     glm_mat4_scale(view, scale);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), view[0]);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(view), view[0]);
+
+    glm_mat4_identity(projection);
+    glm_scale(projection, (vec4){-1.0f, 1.0f, 1.0f, 1.0f});
+    glm_translate(projection, (vec4){-0.5f, -0.5f, 0.0f, 0.0f});
+    glm_mat4_scale(projection, 2.0f);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(view), sizeof(projection),
+                    projection[0]);
+
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(view) + sizeof(projection),
+                    sizeof(scale), &scale);
+
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    glUseProgram(gridProgram);
+    /*glUseProgram(gridProgram);
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
 
     glUseProgram(arrowProgram);
     glBindVertexArray(vao);
-    // glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 1);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 1);
 
     glfwSwapBuffers(window);
   }
