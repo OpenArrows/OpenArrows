@@ -20,5 +20,5 @@ void main() {
   int chunkIndex = gl_InstanceID - arrowIndex;
   texCoord = position;
   gl_Position =
-      vec4((projection * view * vec4(position, 0.0, 1.0)).xy, 0.0, 1.0);
+      vec4((projection * view * vec4(position * scale, 0.0, 1.0)).xy, 0.0, 1.0);
 }

@@ -58,7 +58,7 @@ static void mouse_button_callback(GLFWwindow *window, int button, int action,
       double mouseX, mouseY;
       glfwGetCursorPos(window, &mouseX, &mouseY);
       dragOffsetX = cameraOffset[0] + mouseX / (double)winWidth;
-      dragOffsetY = cameraOffset[1] + mouseY / (double)winHeight;
+      dragOffsetY = cameraOffset[1] + mouseY / (double)winWidth;
     }
   }
 }
@@ -68,7 +68,7 @@ static void cursor_position_callback(GLFWwindow *window, double xpos,
   if (!wheelPressed)
     return;
   cameraOffset[0] = dragOffsetX - xpos / (double)winWidth;
-  cameraOffset[1] = dragOffsetY - ypos / (double)winHeight;
+  cameraOffset[1] = dragOffsetY - ypos / (double)winWidth;
 }
 
 double scroll = 0.f;
@@ -204,8 +204,9 @@ int main(void) {
 
   glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
   glBufferData(GL_UNIFORM_BUFFER,
-               sizeof(view) + sizeof(projection) + sizeof(scale), NULL,
-               GL_STATIC_DRAW);
+               sizeof(view) + sizeof(projection) +
+                   sizeof(scale), // FIXME: is sizeof safe here?
+               NULL, GL_STATIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboTransform);
@@ -233,16 +234,17 @@ int main(void) {
     glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
 
     glm_mat4_identity(view);
-    /*vec3 viewport = {1.0f, (float)winWidth / (float)winHeight, 1.0f};
-    glm_scale(view, viewport);*/
-    vec3 cameraOffset3 = {cameraOffset[0], cameraOffset[1], 0.0f};
-    glm_translate(view, cameraOffset3);
-    glm_mat4_scale(view, scale);
+    glm_translate(view, (vec3){cameraOffset[0] * TILE_COUNT,
+                               cameraOffset[1] * TILE_COUNT, 0.0f});
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(view), view[0]);
 
+    // Viewspace unit vec2(1.0, 1.0) is a single cell
     glm_mat4_identity(projection);
-    glm_scale(projection, (vec4){-1.0f, 1.0f, 1.0f, 1.0f});
-    glm_translate(projection, (vec4){-0.5f, -0.5f, 0.0f, 0.0f});
+    glm_scale(projection,
+              (vec3){1.0f / TILE_COUNT,
+                     (float)winWidth / (float)winHeight / TILE_COUNT, 1.0f});
+    glm_scale(projection, (vec3){-1.0f, 1.0f, 1.0f});
+    glm_translate(projection, (vec3){-0.5f, -0.5f, 0.0f});
     glm_mat4_scale(projection, 2.0f);
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(view), sizeof(projection),
                     projection[0]);
