@@ -8,6 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// TODO: use something like static `powf`
+const float MIN_SCALE =
+    1.0f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f;
+const float MAX_SCALE = 1.0f * 1.2f * 1.2f * 1.2f * 1.2f * 1.2f * 1.2f;
+
 const float TILE_COUNT = 32.f;
 
 GLuint winWidth = 800, winHeight = 600;
@@ -235,6 +240,11 @@ int main(void) {
 
     if (scroll != 0.f) {
       scale *= powf(1.2f, (float)scroll);
+      if (scale < MIN_SCALE) {
+        scale = MIN_SCALE;
+      } else if (scale > MAX_SCALE) {
+        scale = MAX_SCALE;
+      }
       // TODO: Adjust the camera position so that the scale origin is at the
       // mouse cursor
     }
