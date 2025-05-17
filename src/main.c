@@ -231,9 +231,13 @@ int main(void) {
   // Game state
 
   GameMap map;
-  map_init(&map, 0);
+  map_init(&map, 1);
 
-  glBindBufferBase(GL_UNIFORM_BUFFER, 2, map.ssbo);
+  map.chunks[0].x = 0;
+  map.chunks[0].y = 1;
+  map_sync(&map);
+
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, map.ssbo);
 
   // Main game loop
 

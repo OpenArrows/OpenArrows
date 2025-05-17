@@ -56,13 +56,14 @@ typedef struct Arrow Arrow;
    /* signal */ SIZEOF_UINT)
 
 struct Chunk {
-  // x and y are both 16 bits
+  // x and y are both 16-bit signed integers
 #ifdef GLSL
   uint xy; // but such an integer type does not
            // exist in GLSL
 #else
-  uint16_t x;
-  uint16_t y;
+  // FIXME: is this device-consistent?
+  int16_t x;
+  int16_t y;
 #endif
   Arrow arrows[CHUNK_SIZE * CHUNK_SIZE];
   uint adjacentChunks[8]; // It's better to cache adjacent chunks than make a

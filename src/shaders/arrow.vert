@@ -17,8 +17,12 @@ void main() {
   int arrowX = arrowIndex % CHUNK_SIZE;
   int arrowY = arrowIndex / CHUNK_SIZE;
   int chunkIndex = gl_InstanceID - arrowIndex;
+  uint chunkXy = chunks[chunkIndex].xy;
+  int chunkX = int(bitfieldExtract(chunkXy, 0, 16));
+  int chunkY = int(bitfieldExtract(chunkXy, 16, 16));
   texCoord = position;
-  vec2 offset = vec2(float(arrowX), float(arrowY));
+  vec2 offset = vec2(float(chunkX * CHUNK_SIZE + arrowX),
+                     float(chunkY * CHUNK_SIZE + arrowY));
   gl_Position = vec4((projection * view * vec4(offset + position, 0.0, 1.0)).xy,
                      0.0, 1.0);
 }
