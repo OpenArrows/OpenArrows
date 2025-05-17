@@ -204,19 +204,29 @@ int main(void) {
 
   glBindBuffer(GL_UNIFORM_BUFFER, uboTransform);
   glBufferData(GL_UNIFORM_BUFFER,
-               sizeof(view) + sizeof(projection) +
-                   sizeof(scale), // FIXME: is sizeof safe here?
+               sizeof(view) + sizeof(projection), // FIXME: is sizeof safe here?
                NULL, GL_STATIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboTransform);
+
+  mat4 gridTransform;
+
+  GLuint uboGrid;
+  glGenBuffers(1, &uboGrid);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, uboGrid);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(gridTransform), NULL, GL_STATIC_DRAW);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboGrid);
 
   // Game state
 
   GameMap map;
   map_init(&map, 0);
 
-  glBindBufferBase(GL_UNIFORM_BUFFER, 1, map.ssbo);
+  glBindBufferBase(GL_UNIFORM_BUFFER, 2, map.ssbo);
 
   // Main game loop
 
@@ -253,18 +263,29 @@ int main(void) {
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(view), sizeof(projection),
                     projection[0]);
 
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(view) + sizeof(projection),
-                    sizeof(scale), &scale);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glUseProgram(arrowProgram);
+    glBindVertexArray(vao);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 256);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, uboGrid);
+
+    glm_mat4_identity(gridTransform);
+    glm_scale(gridTransform, (vec3){1.0f / scale, 1.0f / scale, 1.0f});
+    glm_translate(gridTransform, (vec3){cameraOffset[0] * TILE_COUNT,
+                                        cameraOffset[1] * TILE_COUNT, 0.0f});
+    glm_scale(gridTransform,
+              (vec3){TILE_COUNT,
+                     TILE_COUNT / ((float)winWidth / (float)winHeight), 1.0f});
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(gridTransform),
+                    gridTransform[0]);
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     glUseProgram(gridProgram);
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    glUseProgram(arrowProgram);
-    glBindVertexArray(vao);
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 256);
 
     glfwSwapBuffers(window);
   }

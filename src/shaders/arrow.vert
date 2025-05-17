@@ -8,7 +8,6 @@ layout(location = 1) out vec2 texCoord;
 layout(std140, binding = 0) uniform Transform {
   mat4 view;
   mat4 projection;
-  float scale;
 };
 
 layout(std430, binding = 1) buffer Map { Chunk chunks[]; };
