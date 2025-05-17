@@ -39,9 +39,9 @@ set(SOURCES
     src/game-map.c
     src/gl-debug.c)
 
-add_executable(game ${SOURCES})
-add_dependencies(game shaders)
-target_link_libraries(game PUBLIC glfw glad)
-set_property(TARGET game PROPERTY C_STANDARD 23)
+add_executable(OpenArrows ${SOURCES})
+add_dependencies(OpenArrows shaders)
+target_link_libraries(OpenArrows PUBLIC glfw glad)
+set_property(TARGET OpenArrows PROPERTY C_STANDARD 23)
 
-install(TARGETS game)
+install(TARGETS OpenArrows)

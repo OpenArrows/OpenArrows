@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char APP_NAME[] = "OpenArrows";
+
 // TODO: use something like static `powf`
 const float MIN_SCALE =
     1.0f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f / 1.2f;
@@ -107,7 +109,7 @@ int main(void) {
   // Window creation
 
   GLFWwindow *window =
-      glfwCreateWindow(winWidth, winHeight, "Democracy Arrows", NULL, NULL);
+      glfwCreateWindow(winWidth, winHeight, APP_NAME, NULL, NULL);
   glfwMakeContextCurrent(window);
 
   glfwSetKeyCallback(window, key_callback);
