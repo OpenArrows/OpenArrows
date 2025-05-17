@@ -10,7 +10,7 @@ layout(std140, binding = 0) uniform Transform {
   mat4 projection;
 };
 
-layout(std430, binding = 1) buffer Map { Chunk chunks[]; };
+layout(std430, binding = 2) buffer Map { Chunk chunks[]; };
 
 void main() {
   int arrowIndex = gl_InstanceID % (CHUNK_SIZE * CHUNK_SIZE);
