@@ -11,7 +11,7 @@ void map_init(GameMap *map) {
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->map.bufferIndex,
                    map->map.ssbo);
 
-  map->map.chunks = malloc(SIZEOF_CHUNK * map->size);
+  map->map.chunks = calloc(map->size, SIZEOF_CHUNK);
   // TODO: handle malloc failure
 
   glGenBuffers(1, &map->state.ssbo);
