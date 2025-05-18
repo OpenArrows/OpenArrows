@@ -6,6 +6,9 @@ project(DemocracyArrows LANGUAGES C VERSION 0.1.0)
 # Vulkan is required to pre-compile GLSL shaders to SPIR-V (glslc)
 find_package(Vulkan REQUIRED COMPONENTS glslc)
 
+# ImageMagick is used to bake the texture atlas
+# find_package(ImageMagick REQUIRED) # Commented out because it doesn't work on Windows (https://gitlab.kitware.com/cmake/cmake/-/issues/26772)
+
 add_subdirectory(lib/glfw)
 
 add_subdirectory(lib/glad/cmake glad_cmake)
@@ -33,6 +36,27 @@ endforeach(SHADER IN LISTS SHADERS)
 
 add_custom_target(shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
 
+# Game resources (textures, etc.)
+add_custom_command(
+    OUTPUT "${PROJECT_BINARY_DIR}/textures/arrows"
+    COMMAND magick mogrify -format png -path "${PROJECT_BINARY_DIR}/textures/arrows" -background none "${CMAKE_SOURCE_DIR}/res/textures/arrows/arrow*.svg"
+    DEPENDS res/textures/arrows
+    VERBATIM)
+
+add_custom_command(
+    OUTPUT "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png"
+    COMMAND magick montage -mode concatenate -background none -tile 8x8 -geometry 256x256 "${PROJECT_BINARY_DIR}/textures/arrows/arrow*.png" "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png"
+    DEPENDS "${PROJECT_BINARY_DIR}/textures/arrows"
+    VERBATIM)
+
+add_custom_command(
+    OUTPUT "${PROJECT_BINARY_DIR}/textures/arrows/atlas.dat"
+    COMMAND magick "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png" -depth 8 -colorspace RGB -background none -flatten -size 2048x2048 RGBA:${PROJECT_BINARY_DIR}/textures/arrows/atlas.dat
+    DEPENDS "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png"
+    VERBATIM)
+
+add_custom_target(resources ALL DEPENDS "${PROJECT_BINARY_DIR}/textures/arrows/atlas.dat")
+
 # Game executable
 set(SOURCES
     src/main.c
@@ -41,6 +65,7 @@ set(SOURCES
 
 add_executable(OpenArrows ${SOURCES})
 add_dependencies(OpenArrows shaders)
+add_dependencies(OpenArrows resources)
 target_link_libraries(OpenArrows PUBLIC glfw glad)
 set_property(TARGET OpenArrows PROPERTY C_STANDARD 23)
 

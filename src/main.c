@@ -41,6 +41,12 @@ static const unsigned char arrow_comp_spv[] = {
 #embed "shaders/arrow.comp.spv"
 };
 
+static const int ARROW_ATLAS_WIDTH = 2048;
+static const int ARROW_ATLAS_HEIGHT = 2048;
+static const unsigned char arrow_atlas[] = {
+#embed "textures/arrows/atlas.dat"
+};
+
 // Game state
 
 float scale = 1.0f;
@@ -228,6 +234,22 @@ int main(void) {
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboGrid);
 
+  // Textures
+
+  GLuint arrowAtlas;
+  glGenTextures(1, &arrowAtlas);
+
+  // FIXME
+  glBindTexture(GL_TEXTURE_2D, arrowAtlas);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ARROW_ATLAS_WIDTH, ARROW_ATLAS_HEIGHT,
+               0, GL_RGB, GL_UNSIGNED_BYTE, arrow_atlas);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
   // Game state
 
   GameMap map = {1};
@@ -285,6 +307,7 @@ int main(void) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     glUseProgram(arrowProgram);
+    glBindTexture(GL_TEXTURE_2D, arrowAtlas);
     glBindVertexArray(vao);
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 256);
 

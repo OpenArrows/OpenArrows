@@ -7,12 +7,10 @@ layout(location = 1) in vec2 texCoord;
 
 layout(location = 2) flat in Arrow arrow;
 
+uniform sampler2D atlas;
+
 void main() {
   if (arrow.type == 0)
     discard;
-  vec3 colors[] = {
-      vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(1.0, 1.0, 0.0),
-      vec3(0.8, 1.0, 0.2), vec3(0.0, 1.0, 1.0),
-  };
-  FragColor = vec4(colors[arrow.type % colors.length()], 1.0);
+  FragColor = texture(atlas, texCoord);
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="64mm" height="64mm" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g fill="#800000" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="28" y="15.347" width="8" height="44" rx="1.5" stroke-width="1.1204"/>
+  <g transform="translate(7.1641 4.653)" stroke-width="1.0135">
+   <rect transform="rotate(135)" x="-18" y="-53.123" width="8" height="36" rx="1.5"/>
+   <rect transform="rotate(45)" x="17.123" y="-18" width="8" height="36" rx="1.5"/>
+  </g>
+ </g>
+</svg>
