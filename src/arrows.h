@@ -23,6 +23,7 @@ typedef uint32_t uint;
 
 // GLSL doesn't support sizeof operator, so we need to define the size of each
 // type by hand
+#define SIZEOF_INT 4
 #define SIZEOF_UINT 4
 
 #ifdef GLSL
@@ -45,15 +46,21 @@ struct Arrow {
   // TODO: can we store the arrow state in a more compact way?
   ArrowType type;
   ArrowRotation rotation;
-  ArrowSignal signal;
 };
 #ifndef GLSL
 typedef struct Arrow Arrow;
 #endif
 
-#define SIZEOF_ARROW                                                           \
-  (/* type */ SIZEOF_UINT + /* rotation */ SIZEOF_UINT +                       \
-   /* signal */ SIZEOF_UINT)
+#define SIZEOF_ARROW (/* type */ SIZEOF_UINT + /* rotation */ SIZEOF_UINT)
+
+struct ArrowState {
+  ArrowSignal signal;
+};
+#ifndef GLSL
+typedef struct ArrowState ArrowState;
+#endif
+
+#define SIZEOF_ARROW_STATE (/* signal */ SIZEOF_UINT)
 
 struct Chunk {
   // x and y are both 16-bit signed integers

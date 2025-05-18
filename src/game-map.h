@@ -3,12 +3,20 @@
 
 struct GameMap {
   unsigned int size;
-  // Instead of continuously copying data across GPU and CPU, we store the map
-  // on the CPU and copy the updates to the GPU. This works because we only
-  // modify map (place and remove arrows and chunks) on the host
-  GLuint ssbo;   // GPU
-  Chunk *chunks; // CPU
-  GLuint bufferIndex;
+  struct {
+    // Instead of continuously copying data across GPU and CPU, we store the map
+    // on the CPU and copy the updates to the GPU. This works because we only
+    // modify map (place and remove arrows and chunks) on the host
+    GLuint ssbo;   // GPU
+    Chunk *chunks; // CPU
+    GLuint bufferIndex;
+  } map;
+  struct {
+    // But dynamic map data, such as signal states, is stored in another buffer
+    // to allow for better optimization
+    GLuint ssbo;
+    GLuint bufferIndex;
+  } state;
 };
 typedef struct GameMap GameMap;
 

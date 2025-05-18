@@ -231,13 +231,14 @@ int main(void) {
   // Game state
 
   GameMap map = {1};
-  map.bufferIndex = 2;
+  map.map.bufferIndex = 2;
+  map.state.bufferIndex = 3;
   map_init(&map);
 
-  map.chunks[0].x = 0;
-  map.chunks[0].y = 1;
+  map.map.chunks[0].x = 0;
+  map.map.chunks[0].y = 1;
   for (int i = 0; i < CHUNK_SIZE * CHUNK_SIZE; i++) {
-    map.chunks[0].arrows[i].type = i;
+    map.map.chunks[0].arrows[i].type = i;
   }
   map_sync(&map);
 
