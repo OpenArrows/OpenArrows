@@ -1,19 +1,23 @@
 #include "game-map.h"
 #include <stdlib.h>
 
-void map_init(GameMap *map, unsigned int nChunks) {
+void map_init(GameMap *map) {
   glGenBuffers(1, &map->ssbo);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, map->ssbo);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, SIZEOF_CHUNK * nChunks, NULL,
+  glBufferData(GL_SHADER_STORAGE_BUFFER, SIZEOF_CHUNK * map->size, NULL,
                GL_STATIC_DRAW);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-  map->chunks = malloc(SIZEOF_CHUNK * nChunks);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->bufferIndex, map->ssbo);
 
-  map->size = nChunks;
+  map->chunks = malloc(SIZEOF_CHUNK * map->size);
+  // TODO: handle malloc failure
 }
 
-void map_deinit(GameMap *map) { glDeleteBuffers(1, &map->ssbo); }
+void map_deinit(GameMap *map) {
+  glDeleteBuffers(1, &map->ssbo);
+  free(map->chunks);
+}
 
 void map_sync(GameMap *map) {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, map->ssbo);
