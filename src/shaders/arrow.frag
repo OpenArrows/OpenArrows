@@ -9,8 +9,13 @@ layout(location = 2) flat in Arrow arrow;
 
 uniform sampler2D atlas;
 
+const vec2 tileSize = vec2(1.0 / 16.0);
+
 void main() {
   if (arrow.type == 0)
     discard;
-  FragColor = texture(atlas, texCoord);
+  uint texIndex = arrow.type - 1;
+  vec2 uv = texCoord * tileSize +
+            tileSize * vec2(float(texIndex % 16), float(int(texIndex) / 16));
+  FragColor = texture(atlas, uv);
 }

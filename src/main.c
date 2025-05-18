@@ -246,8 +246,8 @@ int main(void) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                   GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ARROW_ATLAS_WIDTH, ARROW_ATLAS_HEIGHT,
-               0, GL_RGB, GL_UNSIGNED_BYTE, arrow_atlas);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ARROW_ATLAS_WIDTH, ARROW_ATLAS_HEIGHT,
+               0, GL_RGBA, GL_UNSIGNED_BYTE, arrow_atlas);
   glGenerateMipmap(GL_TEXTURE_2D);
 
   // Game state

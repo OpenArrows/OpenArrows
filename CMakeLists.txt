@@ -45,13 +45,13 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png"
-    COMMAND magick montage -mode concatenate -background none -tile 8x8 -geometry 256x256 "${PROJECT_BINARY_DIR}/textures/arrows/arrow*.png" "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png"
+    COMMAND magick montage -mode concatenate -background none -tile 16x16 -geometry 128x128 "${PROJECT_BINARY_DIR}/textures/arrows/arrow*.png" "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png"
     DEPENDS "${PROJECT_BINARY_DIR}/textures/arrows"
     VERBATIM)
 
 add_custom_command(
     OUTPUT "${PROJECT_BINARY_DIR}/textures/arrows/atlas.dat"
-    COMMAND magick "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png" -depth 8 -colorspace RGB -background none -flatten -size 2048x2048 RGBA:${PROJECT_BINARY_DIR}/textures/arrows/atlas.dat
+    COMMAND magick stream -map rgba -storage-type char "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png" "${PROJECT_BINARY_DIR}/textures/arrows/atlas.dat"
     DEPENDS "${PROJECT_BINARY_DIR}/textures/arrows/atlas.png"
     VERBATIM)
 
