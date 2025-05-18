@@ -8,8 +8,7 @@ void map_init(GameMap *map) {
   glGenBuffers(1, &map->map.ssbo);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, map->map.ssbo);
   glBufferData(GL_SHADER_STORAGE_BUFFER, SIZEOF_CHUNK * map->size,
-               NULL /*map->map.chunks*/, GL_STATIC_DRAW);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+               map->map.chunks, GL_STATIC_DRAW);
 
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->map.bufferIndex,
                    map->map.ssbo);
@@ -21,7 +20,6 @@ void map_init(GameMap *map) {
                NULL, GL_STATIC_READ);
   glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R8UI, GL_RED_INTEGER,
                     GL_UNSIGNED_BYTE, NULL);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->state.bufferIndex,
                    map->state.ssbo);
@@ -37,14 +35,12 @@ void map_sync(GameMap *map) {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, map->map.ssbo);
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, SIZEOF_CHUNK * map->size,
                   map->map.chunks);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void map_sync_chunk(GameMap *map, Chunk *chunk) {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, map->map.ssbo);
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, chunk - map->map.chunks,
                   SIZEOF_CHUNK, chunk);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 Chunk *map_get_chunk(GameMap *map, uint16_t x, uint16_t y) {

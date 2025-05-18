@@ -223,7 +223,6 @@ int main(void) {
   glBufferData(GL_UNIFORM_BUFFER,
                sizeof(view) + sizeof(projection), // FIXME: is sizeof safe here?
                NULL, GL_STATIC_DRAW);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboTransform);
 
@@ -234,7 +233,6 @@ int main(void) {
 
   glBindBuffer(GL_UNIFORM_BUFFER, uboGrid);
   glBufferData(GL_UNIFORM_BUFFER, sizeof(gridTransform), NULL, GL_STATIC_DRAW);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboGrid);
 
@@ -243,7 +241,6 @@ int main(void) {
 
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboPassID);
   glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLint), NULL, GL_DYNAMIC_DRAW);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, ssboPassID);
 
@@ -318,8 +315,6 @@ int main(void) {
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(view), sizeof(projection),
                     projection[0]);
 
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
     glUseProgram(arrowProgram);
     glBindTexture(GL_TEXTURE_2D, arrowAtlas);
     glBindVertexArray(vao);
@@ -336,8 +331,6 @@ int main(void) {
                      TILE_COUNT / ((float)winWidth / (float)winHeight), 1.0f});
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(gridTransform),
                     gridTransform[0]);
-
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     glUseProgram(gridProgram);
     glBindVertexArray(vao);
