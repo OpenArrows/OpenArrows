@@ -21,8 +21,8 @@ void map_init(GameMap *map) {
                GL_STATIC_READ);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->map.bufferIndex,
-                   map->map.ssbo);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->state.bufferIndex,
+                   map->state.ssbo);
 }
 
 void map_deinit(GameMap *map) {

@@ -29,7 +29,7 @@ typedef uint32_t uint;
 #ifdef GLSL
 #define ArrowType uint
 #endif
-ENUM(ArrowType) Void = 0 END_ENUM(ArrowType);
+ENUM(ArrowType) Void = 0, SimpleArrow = 1 END_ENUM(ArrowType);
 
 #ifdef GLSL
 #define ArrowRotation uint // TODO: does rotation have to be 4 bytes?
@@ -40,7 +40,7 @@ Up = 0, Right = 1, Down = 2, Left = 3 END_ENUM(ArrowRotation);
 #ifdef GLSL
 #define ArrowSignal uint
 #endif
-ENUM(ArrowSignal) None = 0 END_ENUM(ArrowSignal);
+ENUM(ArrowSignal) None = 0, Red = 1 END_ENUM(ArrowSignal);
 
 struct Arrow {
   // TODO: can we store the arrow state in a more compact way?

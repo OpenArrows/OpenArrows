@@ -208,6 +208,10 @@ int main(void) {
                  arrow_comp_spv, sizeof(arrow_comp_spv));
   glSpecializeShaderARB(arrowComp, "main", 0, NULL, NULL);
 
+  GLuint arrowComputeProgram = glCreateProgram();
+  glAttachShader(arrowComputeProgram, arrowComp);
+  glLinkProgram(arrowComputeProgram);
+
   // Buffers
 
   mat4 view, projection;
@@ -328,6 +332,11 @@ int main(void) {
     glUseProgram(gridProgram);
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // Game logic
+    glUseProgram(arrowComputeProgram);
+    glDispatchCompute(map.size, 1, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
     glfwSwapBuffers(window);
   }
