@@ -29,7 +29,7 @@ typedef uint32_t uint;
 #ifdef GLSL
 #define ArrowType uint
 #endif
-ENUM(ArrowType) Void = 0, SimpleArrow = 1 END_ENUM(ArrowType);
+ENUM(ArrowType) Void = 0, SourceBlock = 1, WireArrow = 2 END_ENUM(ArrowType);
 
 #ifdef GLSL
 #define ArrowRotation uint // TODO: does rotation have to be 4 bytes?
@@ -46,21 +46,26 @@ struct Arrow {
   // TODO: can we store the arrow state in a more compact way?
   ArrowType type;
   ArrowRotation rotation;
+  uint flipped;
 };
 #ifndef GLSL
 typedef struct Arrow Arrow;
 #endif
 
-#define SIZEOF_ARROW (/* type */ SIZEOF_UINT + /* rotation */ SIZEOF_UINT)
+#define SIZEOF_ARROW                                                           \
+  (/* type */ SIZEOF_UINT + /* rotation */ SIZEOF_UINT +                       \
+   /* flipped */ SIZEOF_UINT)
 
 struct ArrowState {
   ArrowSignal signal;
+  uint received;
 };
 #ifndef GLSL
 typedef struct ArrowState ArrowState;
 #endif
 
-#define SIZEOF_ARROW_STATE (/* signal */ SIZEOF_UINT)
+#define SIZEOF_ARROW_STATE                                                     \
+  (/* signal */ SIZEOF_UINT + /* received */ SIZEOF_UINT)
 
 struct Chunk {
   // x and y are both 16-bit signed integers
@@ -85,4 +90,17 @@ typedef struct Chunk Chunk;
 #endif
 
 #define SIZEOF_CHUNK                                                           \
-  (/* xy */ SIZEOF_UINT + /* arrows */ SIZEOF_ARROW * CHUNK_SIZE * CHUNK_SIZE)
+  (/* xy */ SIZEOF_UINT +                                                      \
+   /* arrows */ SIZEOF_ARROW * CHUNK_SIZE * CHUNK_SIZE +                       \
+   /* adjacentChunks */ SIZEOF_UINT * 8)
+
+#ifdef GLSL
+const float PI = 3.1415926535897932384626433832795;
+
+// Creates a GL matrix from arrow info
+mat2 rot(in Arrow arrow) {
+  // TODO: flip
+  float a = float(arrow.rotation) * PI / 2.0;
+  return mat2(cos(a), -sin(a), sin(a), cos(a));
+}
+#endif

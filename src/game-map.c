@@ -2,23 +2,25 @@
 #include <stdlib.h>
 
 void map_init(GameMap *map) {
+  map->map.chunks = calloc(map->size, SIZEOF_CHUNK);
+  // TODO: handle malloc failure
+
   glGenBuffers(1, &map->map.ssbo);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, map->map.ssbo);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, SIZEOF_CHUNK * map->size, NULL,
-               GL_STATIC_DRAW);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, SIZEOF_CHUNK * map->size,
+               NULL /*map->map.chunks*/, GL_STATIC_DRAW);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->map.bufferIndex,
                    map->map.ssbo);
 
-  map->map.chunks = calloc(map->size, SIZEOF_CHUNK);
-  // TODO: handle malloc failure
-
   glGenBuffers(1, &map->state.ssbo);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, map->state.ssbo);
   glBufferData(GL_SHADER_STORAGE_BUFFER,
-               SIZEOF_ARROW_STATE * CHUNK_SIZE * CHUNK_SIZE * map->size, NULL,
-               GL_STATIC_READ);
+               SIZEOF_ARROW_STATE * 2 * CHUNK_SIZE * CHUNK_SIZE * map->size,
+               NULL, GL_STATIC_READ);
+  glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R8UI, GL_RED_INTEGER,
+                    GL_UNSIGNED_BYTE, NULL);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, map->state.bufferIndex,

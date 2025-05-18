@@ -6,7 +6,7 @@ layout(location = 0) out vec4 FragColor;
 layout(location = 1) in vec2 texCoord;
 
 layout(location = 2) flat in Arrow arrow;
-layout(location = 4) flat in ArrowState state;
+layout(location = 5) flat in ArrowState state;
 
 uniform sampler2D atlas;
 

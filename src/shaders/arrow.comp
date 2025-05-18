@@ -3,22 +3,85 @@
 
 layout(local_size_x = CHUNK_SIZE, local_size_y = CHUNK_SIZE) in;
 
+#define arrowPos gl_LocalInvocationID.xy
+#define arrowIdx gl_LocalInvocationIndex
+#define chunkIdx gl_WorkGroupID.x
+
 layout(std430, binding = 2) buffer Map { Chunk chunks[]; };
 
-layout(std430, binding = 3) buffer MapState {
-  ArrowState[256] states[];
+layout(std430, binding = 3) buffer MapState { ArrowState[256][2] states[]; };
+
+layout(std430, binding = 4) buffer PassID {
+  uint passId; // Pass ID is used to determine if the current pass is even or
+               // odd. That is required to avoid collisions and race conditions
+               // when computing arrow states, because some arrows can be
+               // updated earlier/later than other
 };
 
+// GLSL doesn't have references, so we have to use a little workaround here
+#define chunk chunks[chunkIdx]
+#define arrow chunk.arrows[arrowIdx]
+#define state states[chunkIdx][arrowIdx][passId]
+#define prevState states[chunkIdx][arrowIdx][1 - passId]
+
+void emit(ivec2 dest) {
+  dest = ivec2(rot(arrow) * dest);
+  ivec2 targetPos = ivec2(arrowPos) + dest;
+  uint targetChunk = chunkIdx;
+  if (targetPos.x >= CHUNK_SIZE) {
+    if (targetPos.y >= CHUNK_SIZE) {
+      targetChunk = chunk.adjacentChunks[3];
+      targetPos.x -= CHUNK_SIZE;
+      targetPos.y -= CHUNK_SIZE;
+    } else if (targetPos.y < 0) {
+      targetChunk = chunk.adjacentChunks[1];
+      targetPos.x -= CHUNK_SIZE;
+      targetPos.y += CHUNK_SIZE;
+    } else {
+      targetChunk = chunk.adjacentChunks[2];
+      targetPos.x -= CHUNK_SIZE;
+    }
+  } else if (targetPos.x < 0) {
+    if (targetPos.y < 0) {
+      targetChunk = chunk.adjacentChunks[7];
+      targetPos.x += CHUNK_SIZE;
+      targetPos.y += CHUNK_SIZE;
+    } else if (targetPos.y >= CHUNK_SIZE) {
+      targetChunk = chunk.adjacentChunks[5];
+      targetPos.x += CHUNK_SIZE;
+      targetPos.y -= CHUNK_SIZE;
+    } else {
+      targetChunk = chunk.adjacentChunks[6];
+      targetPos.x += CHUNK_SIZE;
+    }
+  } else if (targetPos.y < 0) {
+    targetChunk = chunk.adjacentChunks[0];
+    targetPos.y += CHUNK_SIZE;
+  } else if (targetPos.y >= CHUNK_SIZE) {
+    targetChunk = chunk.adjacentChunks[4];
+    targetPos.y -= CHUNK_SIZE;
+  }
+  // if (targetChunk != -1)
+  atomicAdd(
+      states[targetChunk][targetPos.y * CHUNK_SIZE + targetPos.x][1 - passId]
+          .received,
+      1);
+}
+
 void main() {
-  uint arrowX = gl_LocalInvocationID.x;
-  uint arrowY = gl_LocalInvocationID.y;
-  uint arrowIndex = gl_LocalInvocationIndex;
-  uint chunkIndex = gl_WorkGroupID.x;
-#define arrow chunks[chunkIndex].arrows[arrowIndex]
-#define state states[chunkIndex][arrowIndex]
   switch (arrow.type) {
-  case SimpleArrow:
+  case SourceBlock:
     state.signal = Red;
+    if (prevState.signal == Red) {
+      emit(ivec2(0, 1));
+      emit(ivec2(1, 0));
+      emit(ivec2(0, -1));
+      emit(ivec2(-1, 0));
+    }
+    break;
+  case WireArrow:
+    state.signal = state.received > 0 ? Red : None;
     break;
   }
+  state.received = 0;
 }

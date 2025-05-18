@@ -238,12 +238,20 @@ int main(void) {
 
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboGrid);
 
+  GLuint ssboPassID;
+  glGenBuffers(1, &ssboPassID);
+
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboPassID);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLint), NULL, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, ssboPassID);
+
   // Textures
 
   GLuint arrowAtlas;
   glGenTextures(1, &arrowAtlas);
 
-  // FIXME
   glBindTexture(GL_TEXTURE_2D, arrowAtlas);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -269,6 +277,8 @@ int main(void) {
   map_sync(&map);
 
   // Main game loop
+
+  GLint passId = 0;
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -334,9 +344,13 @@ int main(void) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // Game logic
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboPassID);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLint), &passId);
+    passId = !passId;
+
     glUseProgram(arrowComputeProgram);
     glDispatchCompute(map.size, 1, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
     glfwSwapBuffers(window);
   }
