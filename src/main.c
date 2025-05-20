@@ -17,6 +17,8 @@ const float MAX_SCALE = 1.0f * 1.2f * 1.2f * 1.2f * 1.2f * 1.2f * 1.2f;
 
 const float TILE_COUNT = 32.f;
 
+int arrowGroups[][5] = {{1, 2, 0, 0, 0}};
+
 GLuint winWidth = 800, winHeight = 600;
 
 // Static resources
@@ -39,6 +41,14 @@ static const unsigned char arrow_frag_spv[] = {
 
 static const unsigned char arrow_comp_spv[] = {
 #embed "shaders/arrow.comp.spv"
+};
+
+static const unsigned char rect_vert_spv[] = {
+#embed "shaders/rect.vert.spv"
+};
+
+static const unsigned char rect_frag_spv[] = {
+#embed "shaders/rect.frag.spv"
 };
 
 static const int ARROW_ATLAS_WIDTH = 2048;
@@ -212,6 +222,21 @@ int main(void) {
   glAttachShader(arrowComputeProgram, arrowComp);
   glLinkProgram(arrowComputeProgram);
 
+  GLuint rectVert = glCreateShader(GL_VERTEX_SHADER);
+  glShaderBinary(1, &rectVert, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 rect_vert_spv, sizeof(rect_vert_spv));
+  glSpecializeShaderARB(rectVert, "main", 0, NULL, NULL);
+
+  GLuint rectFrag = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderBinary(1, &rectFrag, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                 rect_frag_spv, sizeof(rect_frag_spv));
+  glSpecializeShaderARB(rectFrag, "main", 0, NULL, NULL);
+
+  GLuint rectProgram = glCreateProgram();
+  glAttachShader(rectProgram, rectVert);
+  glAttachShader(rectProgram, rectFrag);
+  glLinkProgram(rectProgram);
+
   // Buffers
 
   mat4 view, projection;
@@ -243,6 +268,23 @@ int main(void) {
   glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLint), NULL, GL_DYNAMIC_DRAW);
 
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, ssboPassID);
+
+  GLuint uboUITransform;
+  glGenBuffers(1, &uboUITransform);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, uboUITransform);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(vec2) * 2, NULL, GL_STATIC_DRAW);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, 5, uboUITransform);
+
+  GLuint uboUIRect;
+  glGenBuffers(1, &uboUIRect);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, uboUIRect);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(vec4) + sizeof(vec2), NULL,
+               GL_STATIC_DRAW);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, 6, uboUIRect);
 
   // Textures
 
@@ -335,6 +377,61 @@ int main(void) {
     glUseProgram(gridProgram);
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // GUI
+
+    glBindBuffer(GL_UNIFORM_BUFFER, uboUITransform);
+
+    const float vw = (float)winWidth / (float)winHeight;
+    const float vh = (float)winHeight / (float)winWidth;
+
+    vec2 itemSize = {fminf(0.15f, 0.15f * vh), fminf(0.15f * vw, 0.15f)};
+    vec2 gap = {fminf(0.01f, 0.01f * vh), fminf(0.01f * vw, 0.01f)};
+
+    vec2 panelSize = {itemSize[0] * 5 + gap[0] * 6,
+                      (itemSize[1] + gap[1] * 2) * 2};
+    vec2 panelPos = {0.5f - panelSize[0] / 2.0f, 1.0f - panelSize[1] / 2.0f};
+
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec2), panelPos);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec2), sizeof(vec2), panelSize);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, uboUIRect);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec4),
+                    (vec4){0.f, 0.55f, 0.9f, 1.f});
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4), sizeof(vec2),
+                    (vec4){0.25f * panelSize[1] / panelSize[0] * vh, 0.25f});
+
+    glUseProgram(rectProgram);
+    glBindVertexArray(vao);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4), sizeof(vec2),
+                    (vec4){0.5f, 0.5f});
+
+    for (int i = 0; i < sizeof(arrowGroups) / sizeof(*arrowGroups); i++) {
+      for (int j = 0; j < 5; j++) {
+        if (arrowGroups[i][j] == 0)
+          continue;
+
+        glBindBuffer(GL_UNIFORM_BUFFER, uboUIRect);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec4),
+                        j == 0 ? (vec4){1.f, 0.96f, 0.8f, 1.f}
+                               : (vec4){0.98f, 1.f, 1.f, 1.f});
+
+        glBindBuffer(GL_UNIFORM_BUFFER, uboUITransform);
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec2), sizeof(vec2),
+                        itemSize);
+        glBufferSubData(
+            GL_UNIFORM_BUFFER, 0, sizeof(vec2),
+            (vec2){panelPos[0] + gap[0] + (itemSize[0] + gap[0]) * j,
+                   panelPos[1] + gap[1]});
+
+        glUseProgram(rectProgram);
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+      }
+    }
 
     // Game logic
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboPassID);
